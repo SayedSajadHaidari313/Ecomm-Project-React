@@ -9,8 +9,8 @@ function AddProduct() {
   async function addProduct() {
     console.warn(name, file, price, description);
 
-    // Debugging
     console.log("File:", file);
+
 
     const formData = new FormData();
     formData.append("name", name);
@@ -18,7 +18,6 @@ function AddProduct() {
     formData.append("price", price);
     formData.append("description", description);
 
-    // Debugging
     console.log("FormData:", formData);
 
     let result = await fetch("http://localhost:8000/api/addproduct", {
