@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "./Header.js";
+import * as yup from 'yup';
+
+
+const loginSchema = yup.object().shape({
+  email: yup.string()
+    .email('ایمیل نامعتبر است')
+    .required('پر کردن فیلد ایمیل ضروری است'),
+  password: yup.string()
+    .min(8, 'رمز عبور باید حداقل ۸ کاراکتر باشد')
+    .required('پر کردن فیلد رمز عبور ضروری است'),
+});
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -13,21 +24,31 @@ function Login() {
     }
   });
   async function login() {
-    console.warn(email, password);
-    let item = { email, password };
-    let result = await fetch("http://localhost:8000/api/login", {
-      method: "POST",
-      body: JSON.stringify(item),
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
-    result = await result.json();
-    localStorage.setItem("user-info", JSON.stringify(result));
-    navigate("/add");
-    
+    try {
+      // Validate using yup
+      const isValid = await loginSchema.validate({ email, password }, { abortEarly: false });
+      
+      console.warn(email, password);
+      let item = { email, password };
+      let result = await fetch("http://localhost:8000/api/login", {
+        method: "POST",
+        body: JSON.stringify(item),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
+      result = await result.json();
+      localStorage.setItem("user-info", JSON.stringify(result));
+      navigate("/add");
+      
+    } catch (error) {
+      // Handle the validation errors here
+      // error.inner is an array of errors if abortEarly is false
+      alert(error.errors.join(", "));
+    }
   }
+  
   return (
     <div>
       <Header />
@@ -35,14 +56,14 @@ function Login() {
         <h1>Login Page</h1>
         <input
           type="text"
-          placeholder="email"
+          placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="form-control mb-3"
         />
         <input
           type="password"
-          placeholder="password"
+          placeholder="Enter your password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="form-control mb-3"
